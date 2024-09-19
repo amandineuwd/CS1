@@ -1,0 +1,52 @@
+<html>
+
+<head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body id="app">
+
+        <div>
+            TODO app
+        </div>
+
+        <input 
+            @keyup.enter="createTask"
+            v-model="taskName"
+            placeholder="type a task..."
+        />
+        
+        <button @click="createTask">
+            ADD
+        </button>
+
+        <div v-for="task in tasks">
+            {{index}} - {{ task }}
+            <button @click="deleteTask(index)">X</button>
+        </div>
+
+</body>
+
+<script>
+    const { createApp } = Vue
+
+    createApp({
+        data() {
+            return {
+                taskName: '',
+                tasks: [],
+            }
+        },
+        methods: {
+            deleteTask(index) {
+                this.tasks.splice(index, 1)
+            },
+            createTask() {
+                this.tasks.push(this.taskName)
+                this.taskName = ''
+            },
+        }
+    }).mount('#app')
+</script>
+
+</html>
