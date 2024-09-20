@@ -25,9 +25,11 @@ La date et l'heure actuelles doivent être visibles dans l’interface. ( 2 POIN
 
 B) Nice to have
 
-- Gestion des erreurs : alertes/notifications en cas de tentatives de connexion incorrectes ou de champs manquants lors de l’inscription ( 2 POINTS )
+- Gestion des erreurs : alertes/notifications en cas de tentatives de connexion incorrectes ( 2 POINTS )
 
-- Un bon design cutie avec images ( 3 POINTS ) 
+- Un bon design cutie ( 1 POINT ) 
+
+- Calendrier de l'année
 
 Fonctionnalité d'enregistrement automatique : implémenter la fonctionnalité d'enregistrement automatique afin que les utilisateurs ne perdent pas leur travail si la page s'actualise ou s'ils quittent accidentellement la page. ( 1 POINT )
 

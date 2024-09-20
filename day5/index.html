@@ -6,26 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Diary</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     <style>
+        /* Existing styles remain unchanged */
+
         body {
             font-family: 'Comic Sans MS', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             text-align: center;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
 
         .container {
             padding: 20px;
             margin: auto;
             width: 90%;
-            max-width: 600px;
+            max-width: 800px; /* Increased max-width to accommodate the calendar */
             background: var(--container-bg-color);
             border-radius: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
-        input, textarea, button {
+        input,
+        textarea,
+        select,
+        button {
             margin: 10px 0;
             padding: 10px;
             border: 2px solid #FF69B4;
@@ -34,30 +44,20 @@
             background-color: var(--input-bg-color);
             color: var(--input-text-color);
             font-size: 18px;
+            box-sizing: border-box;
         }
 
         button {
             background-color: #FF69B4;
             color: white;
             cursor: pointer;
+            border: none;
         }
 
         .section-title {
             margin-top: 20px;
             font-size: 22px;
             color: #FF1493;
-        }
-
-        .task-item {
-            background-color: var(--task-bg-color);
-            padding: 8px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-        }
-
-        .reminder {
-            margin-top: 10px;
-            font-size: 14px;
         }
 
         .theme-switch {
@@ -68,6 +68,30 @@
             border-radius: 10px;
             background-color: var(--input-bg-color);
             color: var(--input-text-color);
+            display: inline-block;
+        }
+
+        /* Journal Sections Layout */
+        .journal-categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .journal-category {
+            padding: 15px;
+            background-color: #FFF5F5;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .journal-category img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
         }
 
         /* Dark Mode */
@@ -77,7 +101,6 @@
             --container-bg-color: #444;
             --input-bg-color: #555;
             --input-text-color: #FFF;
-            --task-bg-color: #666;
         }
 
         /* Light Mode */
@@ -87,7 +110,148 @@
             --container-bg-color: #FFF5F5;
             --input-bg-color: #FFF0F5;
             --input-text-color: #FF1493;
-            --task-bg-color: #FFE4E1;
+        }
+
+        /* Post-it Notes */
+        .post-it {
+            position: absolute;
+            width: 150px;
+            min-height: 150px;
+            background-color: #FFEB3B;
+            padding: 10px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            transform: rotate(-5deg);
+            font-family: 'Comic Sans MS', sans-serif;
+            color: #333;
+            overflow-wrap: break-word;
+        }
+
+        /* Priority Indicators */
+        .high {
+            border-left: 5px solid #FF0000;
+        }
+
+        .medium {
+            border-left: 5px solid #FFA500;
+        }
+
+        .low {
+            border-left: 5px solid #008000;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: var(--input-bg-color);
+        }
+
+        .task-item .priority {
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: white;
+        }
+
+        .priority-high {
+            background-color: #FF0000;
+        }
+
+        .priority-medium {
+            background-color: #FFA500;
+        }
+
+        .priority-low {
+            background-color: #008000;
+        }
+
+        /* Secrets List */
+        .secrets-list {
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--input-bg-color);
+            border-radius: 10px;
+        }
+
+        .secret-item {
+            background-color: #FFF0F5;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .secret-item button {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background-color: transparent;
+            color: red;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Calendar Styles */
+        .calendar {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .calendar-header button {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            padding: 10px;
+            background-color: var(--input-bg-color);
+            border-radius: 5px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day-header {
+            font-weight: bold;
+            background-color: #FF69B4;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .today {
+            border: 2px solid #FF1493;
+        }
+
+        /* Additional Styles for Error Messages */
+        .error-message {
+            color: red;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -101,48 +265,100 @@
             Switch to {{ theme === 'dark' ? 'Light' : 'Dark' }} Mode
         </div>
 
-        <!-- Create User and Password -->
+        <!-- Login Form -->
         <div v-if="!userLoggedIn">
-            <h2>Register or Login</h2>
+            <h2>Login</h2>
             <input v-model="username" placeholder="Username" />
             <input v-model="password" placeholder="Password" type="password" />
-            <button @click="registerOrLogin">Register/Login</button>
+            <button @click="login">Login</button>
+
+            <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
         </div>
 
         <!-- Diary Content -->
         <div v-if="userLoggedIn">
             <!-- Date and Time -->
             <div class="section-title">Date & Time</div>
-            <p>{{ currentDate }}</p>
+            <p>{{ currentTime }}</p>
 
-            <!-- Post-it Compartment -->
-            <div class="section-title">Post-it Compartment</div>
-            <textarea v-model="postIt" placeholder="What's on your mind?"></textarea>
+            <!-- Journal Categories (Post-It, Secrets, Planning, Calendar, etc.) -->
+            <div class="journal-categories">
+                <!-- Post-it Section -->
+                <div class="journal-category">
+                    <img src="https://via.placeholder.com/50" alt="Post-it">
+                    <div>Post-it</div>
+                    <input v-model="newPostIt" placeholder="Write a note..." @keyup.enter="addPostIt" />
+                    <button @click="addPostIt">Add Note</button>
+                </div>
 
-            <!-- Secret Writing Compartment -->
-            <div class="section-title">Secret Writing Compartment</div>
-            <textarea v-model="secretWriting" placeholder="Write your secrets here..."></textarea>
+                <!-- Secret Writing Section with Password -->
+                <div class="journal-category">
+                    <img src="https://via.placeholder.com/50" alt="Secrets">
+                    <div>Secret Writing</div>
+                    <input v-model="secretPassword" placeholder="Enter password to view secrets" type="password" />
+                    <button @click="checkPassword">Unlock Secrets</button>
+                    <div v-if="passwordEntered">
+                        <textarea v-model="newSecret" placeholder="Write your secret here..." @keyup.enter="addSecret"></textarea>
+                        <button @click="addSecret">Add Secret</button>
+                        <div class="secrets-list">
+                            <div v-for="(secret, index) in secrets" :key="index" class="secret-item">
+                                {{ secret }}
+                                <button @click="deleteSecret(index)">X</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Planning Compartment -->
-            <div class="section-title">Planning Compartment</div>
-            <input v-model="taskName" placeholder="Add a task..." @keyup.enter="createTask" />
-            <button @click="createTask">Add Task</button>
-            <select v-model="taskPriority">
-                <option disabled value="">Priority</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-            </select>
-            <div v-for="(task, index) in tasks" class="task-item">
-                {{ task.name }} (Priority: {{ task.priority }})
-                <button @click="deleteTask(index)">X</button>
+                <!-- Planning Section -->
+                <div class="journal-category">
+                    <img src="https://via.placeholder.com/50" alt="Planning">
+                    <div>Planning</div>
+                    <input v-model="taskName" placeholder="Add a task..." @keyup.enter="createTask" />
+                    <select v-model="taskPriority">
+                        <option disabled value="">Select Priority</option>
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                    <button @click="createTask">Add Task</button>
+                    <div v-for="(task, index) in tasks" :key="index" :class="['task-item', task.priority.toLowerCase()]">
+                        <span>{{ task.name }}</span>
+                        <span :class="['priority', 'priority-' + task.priority.toLowerCase()]">
+                            {{ task.priority }}
+                        </span>
+                        <button @click="deleteTask(index)">X</button>
+                    </div>
+                </div>
+
+                <!-- Calendar Section -->
+                <div class="journal-category">
+                    <img src="https://via.placeholder.com/50" alt="Calendar">
+                    <div>Calendar</div>
+                    <div class="calendar">
+                        <div class="calendar-header">
+                            <button @click="prevMonth">&lt;</button>
+                            <div>{{ monthNames[currentMonth] }} {{ currentYear }}</div>
+                            <button @click="nextMonth">&gt;</button>
+                        </div>
+                        <div class="calendar-grid">
+                            <!-- Day Headers -->
+                            <div class="calendar-day-header" v-for="day in weekDays" :key="day">{{ day }}</div>
+                            <!-- Days -->
+                            <div v-for="blank in firstDayOfMonth" :key="'blank-' + blank" class="calendar-day"></div>
+                            <div v-for="day in daysInMonth" :key="day"
+                                :class="['calendar-day', isToday(day) ? 'today' : '']">
+                                {{ day }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Reminder -->
-            <div class="section-title">Reminders</div>
-            <input v-model="reminder" placeholder="Add a reminder..." />
-            <button @click="addReminder">Set Reminder</button>
-            <div class="reminder" v-if="reminderSet">{{ reminder }} - Reminder set for {{ reminderTime }}</div>
+        <!-- Render Post-it Notes -->
+        <div v-for="(note, index) in postIts" :key="note.id" class="post-it" :style="note.style">
+            {{ note.text }}
+            <button @click="deletePostIt(note.id)" style="top: 0; right: 0;">X</button>
         </div>
     </div>
 
@@ -151,56 +367,181 @@
         createApp({
             data() {
                 return {
+                    // Login Data
                     username: '',
                     password: '',
                     userLoggedIn: false,
-                    postIt: '',
-                    secretWriting: '',
+                    errorMessage: '',
+
+                    // Current Time
+                    currentTime: new Date().toLocaleString(),
+
+                    // Theme
+                    theme: 'light',
+
+                    // Post-it Notes
+                    newPostIt: '',
+                    postIts: [],
+
+                    // Secrets
+                    secretPassword: '',
+                    correctPassword: 'mysecret',  // Set your desired password here
+                    passwordEntered: false,
+                    secrets: [],
+                    newSecret: '',
+
+                    // Tasks
                     taskName: '',
                     taskPriority: '',
                     tasks: [],
-                    reminder: '',
-                    reminderSet: false,
-                    reminderTime: '',
-                    currentDate: new Date().toLocaleString(),
-                    theme: 'light',
+
+                    // Calendar Data
+                    currentDate: new Date(),
+                    monthNames: [
+                        "January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"
+                    ],
+                    weekDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
                 };
             },
+            computed: {
+                currentMonth() {
+                    return this.currentDate.getMonth();
+                },
+                currentYear() {
+                    return this.currentDate.getFullYear();
+                },
+                daysInMonth() {
+                    const month = this.currentDate.getMonth();
+                    const year = this.currentDate.getFullYear();
+                    return new Date(year, month + 1, 0).getDate();
+                },
+                firstDayOfMonth() {
+                    const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1).getDay();
+                    return Array.from({ length: firstDay }, (_, i) => i);
+                },
+                todayDate() {
+                    const today = new Date();
+                    return today.getDate();
+                }
+            },
             methods: {
-                registerOrLogin() {
-                    fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: this.username, password: this.password })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
+                async login() {
+                    try {
+                        const response = await axios.post('http://localhost:8000/login', {
+                            username: this.username,
+                            password: this.password
+                        });
+                        if (response.status === 200) {
                             this.userLoggedIn = true;
-                        } else {
-                            alert('Login failed. Try again.');
+                            this.errorMessage = '';
+                            this.fetchPostIts(); // Fetch Post-its after successful login
                         }
-                    });
-                },
-                createTask() {
-                    if (this.taskName && this.taskPriority) {
-                        this.tasks.push({ name: this.taskName, priority: this.taskPriority });
-                        this.taskName = '';
-                        this.taskPriority = '';
+                    } catch (error) {
+                        this.errorMessage = 'Login failed. Incorrect username or password. Please try again.';
                     }
-                },
-                deleteTask(index) {
-                    this.tasks.splice(index, 1);
-                },
-                addReminder() {
-                    this.reminderSet = true;
-                    this.reminderTime = new Date().toLocaleString();
                 },
                 toggleTheme() {
                     this.theme = this.theme === 'light' ? 'dark' : 'light';
                     document.documentElement.setAttribute('data-theme', this.theme);
+                },
+                updateTime() {
+                    this.currentTime = new Date().toLocaleString();
+                },
+                // Post-it Methods
+                async fetchPostIts() {
+                    try {
+                        const response = await axios.get('http://localhost:8000/postits');
+                        this.postIts = response.data;
+                    } catch (error) {
+                        console.error('Error fetching Post-it notes:', error);
+                    }
+                },
+                async addPostIt() {
+                    if (this.newPostIt.trim()) {
+                        // Generate random positions
+                        const randomX = Math.floor(Math.random() * (window.innerWidth - 200));
+                        const randomY = Math.floor(Math.random() * (window.innerHeight - 200));
+                        const newPostItData = {
+                            text: this.newPostIt.trim(),
+                            style: {
+                                top: `${randomY}px`,
+                                left: `${randomX}px`,
+                            }
+                        };
+                        try {
+                            const response = await axios.post('http://localhost:8000/postits', newPostItData);
+                            this.postIts.push(response.data);
+                            this.newPostIt = '';
+                        } catch (error) {
+                            console.error('Error adding Post-it note:', error);
+                        }
+                    }
+                },
+                async deletePostIt(id) {
+                    try {
+                        await axios.delete(`http://localhost:8000/postits/${id}`);
+                        this.postIts = this.postIts.filter(note => note.id !== id);
+                    } catch (error) {
+                        console.error('Error deleting Post-it note:', error);
+                    }
+                },
+                // Secret Methods
+                checkPassword() {
+                    if (this.secretPassword === this.correctPassword) {
+                        this.passwordEntered = true;
+                        this.errorMessage = '';
+                    } else {
+                        this.errorMessage = 'Incorrect password for secrets. Please try again.';
+                        this.passwordEntered = false;
+                    }
+                },
+                addSecret() {
+                    if (this.newSecret.trim()) {
+                        this.secrets.push(this.newSecret.trim());
+                        this.newSecret = '';
+                    }
+                },
+                deleteSecret(index) {
+                    this.secrets.splice(index, 1);
+                },
+                // Task Methods
+                async createTask() {
+                    if (this.taskName.trim() && this.taskPriority) {
+                        this.tasks.push({ name: this.taskName.trim(), priority: this.taskPriority });
+                        this.taskName = '';
+                        this.taskPriority = '';
+                    }
+                },
+                async deleteTask(index) {
+                    this.tasks.splice(index, 1);
+                },
+                // Calendar Methods
+                prevMonth() {
+                    if (this.currentDate.getMonth() === 0) {
+                        this.currentDate = new Date(this.currentDate.getFullYear() - 1, 11, 1);
+                    } else {
+                        this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
+                    }
+                },
+                nextMonth() {
+                    if (this.currentDate.getMonth() === 11) {
+                        this.currentDate = new Date(this.currentDate.getFullYear() + 1, 0, 1);
+                    } else {
+                        this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+                    }
+                },
+                isToday(day) {
+                    const today = new Date();
+                    return day === today.getDate() &&
+                        this.currentMonth === today.getMonth() &&
+                        this.currentYear === today.getFullYear();
                 }
             },
+            mounted() {
+                this.updateTime();
+                setInterval(this.updateTime, 1000); // Update every second
+            }
         }).mount('#app');
     </script>
 </body>
