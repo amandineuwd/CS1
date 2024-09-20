@@ -29,7 +29,7 @@ B) Nice to have
 
 - Un bon design cutie ( 1 POINT ) 
 
-- Calendrier de l'année
+- Calendrier de l'année ( 2 POINTS )
 
 Fonctionnalité d'enregistrement automatique : implémenter la fonctionnalité d'enregistrement automatique afin que les utilisateurs ne perdent pas leur travail si la page s'actualise ou s'ils quittent accidentellement la page. ( 1 POINT )
 
