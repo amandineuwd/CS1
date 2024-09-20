@@ -50,7 +50,7 @@ class PostItCreate(PostItBase):
 class PostIt(PostItBase):
     id: str
 
-# In-memory storage for Post-it notes
+# memoire pour les post-it 
 postits: List[PostIt] = []
 
 @app.get("/postits", response_model=List[PostIt])
@@ -72,12 +72,6 @@ def delete_postit(postit_id: str):
         raise HTTPException(status_code=404, detail="Post-it not found")
     return
 
-# --------------------------
-# Additional Endpoints for Other Categories
-# --------------------------
-
-# Similar endpoints can be created for Secrets, Tasks, etc.
-# For brevity, only Post-it notes are handled here.
 
 if __name__ == '__main__':
     import uvicorn
