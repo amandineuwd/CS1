@@ -1,16 +1,208 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
-<head></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Diary</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            padding: 20px;
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            background: var(--container-bg-color);
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        input, textarea, button {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #FF69B4;
+            border-radius: 10px;
+            width: 100%;
+            background-color: var(--input-bg-color);
+            color: var(--input-text-color);
+            font-size: 18px;
+        }
+
+        button {
+            background-color: #FF69B4;
+            color: white;
+            cursor: pointer;
+        }
+
+        .section-title {
+            margin-top: 20px;
+            font-size: 22px;
+            color: #FF1493;
+        }
+
+        .task-item {
+            background-color: var(--task-bg-color);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .reminder {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .theme-switch {
+            margin: 20px;
+            cursor: pointer;
+            padding: 10px;
+            border: 2px solid #FF69B4;
+            border-radius: 10px;
+            background-color: var(--input-bg-color);
+            color: var(--input-text-color);
+        }
+
+        /* Dark Mode */
+        :root[data-theme="dark"] {
+            --bg-color: #333;
+            --text-color: #FFF;
+            --container-bg-color: #444;
+            --input-bg-color: #555;
+            --input-text-color: #FFF;
+            --task-bg-color: #666;
+        }
+
+        /* Light Mode */
+        :root {
+            --bg-color: #FFE3E3;
+            --text-color: #FF69B4;
+            --container-bg-color: #FFF5F5;
+            --input-bg-color: #FFF0F5;
+            --input-text-color: #FF1493;
+            --task-bg-color: #FFE4E1;
+        }
+    </style>
+</head>
 
 <body>
+    <div id="app" class="container">
+        <h1>My Cute Diary</h1>
 
-    <div>
-        DIARY APP
+        <!-- Theme Switcher -->
+        <div @click="toggleTheme" class="theme-switch">
+            Switch to {{ theme === 'dark' ? 'Light' : 'Dark' }} Mode
+        </div>
+
+        <!-- Create User and Password -->
+        <div v-if="!userLoggedIn">
+            <h2>Register or Login</h2>
+            <input v-model="username" placeholder="Username" />
+            <input v-model="password" placeholder="Password" type="password" />
+            <button @click="registerOrLogin">Register/Login</button>
+        </div>
+
+        <!-- Diary Content -->
+        <div v-if="userLoggedIn">
+            <!-- Date and Time -->
+            <div class="section-title">Date & Time</div>
+            <p>{{ currentDate }}</p>
+
+            <!-- Post-it Compartment -->
+            <div class="section-title">Post-it Compartment</div>
+            <textarea v-model="postIt" placeholder="What's on your mind?"></textarea>
+
+            <!-- Secret Writing Compartment -->
+            <div class="section-title">Secret Writing Compartment</div>
+            <textarea v-model="secretWriting" placeholder="Write your secrets here..."></textarea>
+
+            <!-- Planning Compartment -->
+            <div class="section-title">Planning Compartment</div>
+            <input v-model="taskName" placeholder="Add a task..." @keyup.enter="createTask" />
+            <button @click="createTask">Add Task</button>
+            <select v-model="taskPriority">
+                <option disabled value="">Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <div v-for="(task, index) in tasks" class="task-item">
+                {{ task.name }} (Priority: {{ task.priority }})
+                <button @click="deleteTask(index)">X</button>
+            </div>
+
+            <!-- Reminder -->
+            <div class="section-title">Reminders</div>
+            <input v-model="reminder" placeholder="Add a reminder..." />
+            <button @click="addReminder">Set Reminder</button>
+            <div class="reminder" v-if="reminderSet">{{ reminder }} - Reminder set for {{ reminderTime }}</div>
+        </div>
     </div>
 
-    <input />
-    <button>ADD</button>
-
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    username: '',
+                    password: '',
+                    userLoggedIn: false,
+                    postIt: '',
+                    secretWriting: '',
+                    taskName: '',
+                    taskPriority: '',
+                    tasks: [],
+                    reminder: '',
+                    reminderSet: false,
+                    reminderTime: '',
+                    currentDate: new Date().toLocaleString(),
+                    theme: 'light',
+                };
+            },
+            methods: {
+                registerOrLogin() {
+                    fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: this.username, password: this.password })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.userLoggedIn = true;
+                        } else {
+                            alert('Login failed. Try again.');
+                        }
+                    });
+                },
+                createTask() {
+                    if (this.taskName && this.taskPriority) {
+                        this.tasks.push({ name: this.taskName, priority: this.taskPriority });
+                        this.taskName = '';
+                        this.taskPriority = '';
+                    }
+                },
+                deleteTask(index) {
+                    this.tasks.splice(index, 1);
+                },
+                addReminder() {
+                    this.reminderSet = true;
+                    this.reminderTime = new Date().toLocaleString();
+                },
+                toggleTheme() {
+                    this.theme = this.theme === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', this.theme);
+                }
+            },
+        }).mount('#app');
+    </script>
 </body>
 
 </html>
