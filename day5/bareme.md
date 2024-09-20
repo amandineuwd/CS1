@@ -11,9 +11,7 @@ Username : createch
 Mot de passe : root
 
 - Sections compartimentées :
-Post-it : une section pour les notes générales et/ou les réflexions ( 1 POINT ) 
-
-écriture secret : une section plus privée pour l'écriture personnelle ( possibilité de demander le mot de passe ) ( 1 POINT )
+Post-it : une section pour les notes générales et/ou les réflexions ( 2 POINTS ) 
 
 Compartiment de planification : une section où les utilisateurs peuvent ajouter et supprimer des tâches. ( 2 POINTS )
 
