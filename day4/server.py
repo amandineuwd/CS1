@@ -6,8 +6,8 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 import datetime
-from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
